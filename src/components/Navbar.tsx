@@ -45,6 +45,7 @@ export default function Navbar(): React.ReactElement {
         <div className={`navbar-menu ${isMenuOpen ? 'open' : ''}`}>
           <ul>
             <li><Link href="/">Home</Link></li>
+            <li><Link href="/blog">Blog</Link></li>
             <li><Link href="/web">Web</Link></li>
             <li><Link href="/mobile">Mobile</Link></li>
             <li><Link href="/custom">Custom</Link></li>
