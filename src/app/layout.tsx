@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Head from "next/head";
+import LayoutClient from './layout.client';
+
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
@@ -10,7 +11,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <Head>
+      <head>
         <title>Buteos Systems - Web & Mobile Solutions</title>
         <meta name="description" content="Full-stack software engineering delivering seamless web and mobile design, development, and deployment for businesses ready to thrive online." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,8 +19,9 @@ export default function RootLayout({
         <meta name="author" content="Buteos Systems" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-      </Head>
+      </head>
       <body className={inter.className}>
+        <LayoutClient />
         <div className="logo-container">
           <a href="/">
             <img src="https://storage.googleapis.com/buteos-res/bs_logo_nobg.png" alt="Buteos Systems Logo" className="logo-image" />
