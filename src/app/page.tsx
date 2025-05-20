@@ -5,10 +5,25 @@ import { BlogPost } from "@/types/BlogPosts"
 // Add this async function to fetch the latest blog post
 async function getLatestBlogPost(): Promise<BlogPost | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/blog/articles`, { cache: 'no-store' });
-    if (!response.ok) return null;
+    // Use absolute URL in production, relative URL in development
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+    const apiUrl = `${baseUrl}/api/blog/articles`;
+    
+    console.log('Fetching blog posts from:', apiUrl);
+    
+    const response = await fetch(apiUrl, { 
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to fetch blog posts:', response.status, response.statusText);
+      return null;
+    }
     
     const posts = await response.json();
+    console.log('Fetched posts:', posts?.length || 0);
+    
     if (!posts || !posts.length) return null;
     
     // Sort by ID in descending order and get the first one
@@ -19,10 +34,24 @@ async function getLatestBlogPost(): Promise<BlogPost | null> {
   }
 }
 
+
 export default async function Home() {
   // Fetch the latest blog post
-  const latestPost = await getLatestBlogPost();
-  
+  let latestPost;
+  try {
+    latestPost = await getLatestBlogPost();
+  } catch (error) {
+    console.error('Error in getLatestBlogPost:', error);
+    // Provide a fallback post if fetching fails
+    latestPost = {
+      id: 1,
+      title: "The AI Awakening in Business: More Than Just Hype",
+      excerpt: "Leveraging AI to create more efficient processes, deliver superior customer experiences, and unlock unprecedented levels of innovation.",
+      author: "John Doe",
+      date: "May 17, 2025",
+      image: "https://images.unsplash.com/photo-1677442135136-760c813770c8"
+    };
+  }
   return (
     <main>
       <section className="hero-section">

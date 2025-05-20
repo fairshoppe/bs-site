@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server';
-import { BlogPost } from '@/types/BlogPosts'
+import { BlogPost } from '@/types/BlogPosts';
+import fs from 'fs';
+import path from 'path';
 
 // Google Cloud Storage bucket information
 const bucketName = 'buteos-res';
 const articlesFolder = 'blogs/articles';
 const bucketBaseUrl = `https://storage.googleapis.com/${bucketName}`;
-
 
 // GET handler to fetch all articles or a specific article
 export async function GET(req: NextRequest) {
@@ -14,17 +15,12 @@ export async function GET(req: NextRequest) {
   
   try {
     if (id) {
-      // Fetch a specific article - first try from the public directory
-      let articleUrl = `/blog/article-${id}.json`;
-      let response = await fetch(new URL(articleUrl, 'http://localhost'));
+      // Try to fetch from Google Cloud Storage first (works in both environments)
+      const articleUrl = `${bucketBaseUrl}/${articlesFolder}/article-${id}.json`;
+      let response = await fetch(articleUrl);
       
-      // If not found in public directory, try from Google Cloud Storage
       if (!response.ok) {
-        articleUrl = `${bucketBaseUrl}/${articlesFolder}/article-${id}.json`;
-        response = await fetch(articleUrl);
-      }
-
-      if (!response.ok) {
+        // If not found in GCS, return a 404
         return new Response(JSON.stringify({ message: 'Article not found' }), { 
           status: 404,
           headers: { 'Content-Type': 'application/json' }
@@ -46,27 +42,42 @@ export async function GET(req: NextRequest) {
         const sampleArticles = [
           {
             id: 1,
-            title: 'The Future of Web Development',
-            excerpt: 'Exploring the latest trends and technologies shaping the future of web development.',
+            title: 'The AI Awakening in Business: More Than Just Hype',
+            excerpt: 'Leveraging AI to create more efficient processes, deliver superior customer experiences, and unlock unprecedented levels of innovation.',
             author: 'John Doe',
-            date: 'May 15, 2025',
-            image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085'
+            date: 'May 17, 2025',
+            image: 'https://images.unsplash.com/photo-1677442135136-760c813770c8',
+            main_image: {
+              file_url: 'https://images.unsplash.com/photo-1677442135136-760c813770c8',
+              alt_text: 'AI concept image'
+            },
+            slug: 'ai-awakening-business'
           },
           {
             id: 2,
-            title: 'Mobile App Development Best Practices',
-            excerpt: 'Key strategies and best practices for building successful mobile applications.',
+            title: 'Your New Superpowered Teammates: How AI Agents Are Revolutionizing Business Operations',
+            excerpt: 'The AI Agents of 2025 are sophisticated, specialized, and ready to become your business\'s new superpowered teammates.',
             author: 'Jane Smith',
-            date: 'May 10, 2025',
-            image: 'https://images.unsplash.com/photo-1551650975-87deedd944c3'
+            date: 'May 24, 2025',
+            image: 'https://images.unsplash.com/photo-1551650975-87deedd944c3',
+            main_image: {
+              file_url: 'https://images.unsplash.com/photo-1551650975-87deedd944c3',
+              alt_text: 'AI agents concept'
+            },
+            slug: 'ai-agents-business-operations'
           },
           {
             id: 3,
-            title: 'AI Integration in Business Applications',
-            excerpt: 'How artificial intelligence is transforming business applications and workflows.',
+            title: 'The Mobile-First Mandate: Why Your Business\'s Front Door Is Now in Their Pocket',
+            excerpt: 'In 2025, a strong mobile presence isn\'t just a nice-to-have—it\'s a fundamental business imperative for customer acquisition and retention.',
             author: 'Alex Johnson',
-            date: 'May 5, 2025',
-            image: 'https://images.unsplash.com/photo-1535378620166-273708d44e4c'
+            date: 'June 1, 2025',
+            image: 'https://images.unsplash.com/photo-1535378620166-273708d44e4c',
+            main_image: {
+              file_url: 'https://images.unsplash.com/photo-1535378620166-273708d44e4c',
+              alt_text: 'Mobile phone in hand'
+            },
+            slug: 'mobile-first-mandate'
           }
         ];
         return new Response(JSON.stringify(sampleArticles), { 
@@ -83,8 +94,24 @@ export async function GET(req: NextRequest) {
     }
   } catch (error) {
     console.error('Error fetching articles:', error);
-    return new Response(JSON.stringify({ message: 'Error fetching articles' }), { 
-      status: 500,
+    // Return sample data as fallback in case of error
+    const fallbackArticles = [
+      {
+        id: 1,
+        title: 'The AI Awakening in Business: More Than Just Hype',
+        excerpt: 'Leveraging AI to create more efficient processes, deliver superior customer experiences, and unlock unprecedented levels of innovation.',
+        author: 'John Doe',
+        date: 'May 17, 2025',
+        image: 'https://images.unsplash.com/photo-1677442135136-760c813770c8',
+        main_image: {
+          file_url: 'https://images.unsplash.com/photo-1677442135136-760c813770c8',
+          alt_text: 'AI concept image'
+        },
+        slug: 'ai-awakening-business'
+      }
+    ];
+    return new Response(JSON.stringify(fallbackArticles), { 
+      status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
   }
