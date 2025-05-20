@@ -54,9 +54,10 @@ export default async function Home() {
                   <span><i className="fas fa-calendar"></i> {latestPost.date}</span>
                 </div>
                 <p>{latestPost.excerpt}</p>
-                <Link href={`/blog/${latestPost.id}`} className="cta-button">
+                <Link href={`/blog?postId=${latestPost.id}`} className="cta-button">
                   Read More <i className="fas fa-arrow-right"></i>
                 </Link>
+
 
               </div>
             </div>
