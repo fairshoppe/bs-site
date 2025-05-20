@@ -10,6 +10,8 @@ function CheckoutForm() {
   const elements = useElements()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,21 +20,58 @@ function CheckoutForm() {
     setLoading(true)
     setError('')
 
-    const { error: submitError } = await stripe.confirmPayment({
+    // This is the key part - make sure you're properly confirming the payment
+    const { error: submitError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
+        // Add payment_method_data to provide additional details
+        payment_method_data: {
+          billing_details: {
+            name: name || 'Customer',
+            email: email || undefined,
+          },
+        },
         return_url: `${window.location.origin}/success`,
       },
-    })
+      redirect: 'if_required', // Only redirect if 3D Secure is needed
+    });
 
     if (submitError) {
-      setError(submitError.message || 'An error occurred')
+      console.error('Payment error:', submitError);
+      setError(submitError.message || 'An error occurred');
+      setLoading(false);
+    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+      // Handle successful payment without redirect
+      window.location.href = `${window.location.origin}/success`;
     }
-    setLoading(false)
+    // If we get here without an error or success, it means the user is being redirected
+    // for 3D Secure authentication, so we don't need to do anything
   }
 
   return (
     <form onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label htmlFor="name">Name</label>
+        <input
+          type="text"
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="form-input"
+        />
+      </div>
+      <div className="form-group">
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="form-input"
+        />
+      </div>
       <PaymentElement />
       {error && <div className="alert error">{error}</div>}
       <button
@@ -55,6 +94,7 @@ function CheckoutForm() {
     </form>
   )
 }
+
 
 export default function PaymentContent() {
   const searchParams = useSearchParams()
@@ -116,6 +156,7 @@ export default function PaymentContent() {
         </section>
       </main>
     )
+    
   }
 
   return (

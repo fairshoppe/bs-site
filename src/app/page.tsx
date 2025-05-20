@@ -1,7 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BlogPost } from "@/types/BlogPosts"
 
-export default function Home() {
+// Add this async function to fetch the latest blog post
+async function getLatestBlogPost(): Promise<BlogPost | null> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/blog/articles`, { cache: 'no-store' });
+    if (!response.ok) return null;
+    
+    const posts = await response.json();
+    if (!posts || !posts.length) return null;
+    
+    // Sort by ID in descending order and get the first one
+    return posts.sort((a: BlogPost, b: BlogPost) => b.id - a.id)[0];
+  } catch (error) {
+    console.error('Error fetching latest blog post:', error);
+    return null;
+  }
+}
+
+export default async function Home() {
+  // Fetch the latest blog post
+  const latestPost = await getLatestBlogPost();
+  
   return (
     <main>
       <section className="hero-section">
@@ -12,6 +33,36 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Add the latest blog post section */}
+      {latestPost && (
+        <section className="content-section">
+          <div className="container">
+            <h2>Latest from Our Blog</h2>
+            <div className="blog-preview-card">
+              <div className="blog-preview-image">
+                <img 
+                  src={latestPost.image} 
+                  alt={latestPost.title}
+                  style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }}
+                />
+              </div>
+              <div className="blog-preview-content">
+                <h3>{latestPost.title}</h3>
+                <div className="blog-meta">
+                  <span><i className="fas fa-user"></i> {latestPost.author}</span>
+                  <span><i className="fas fa-calendar"></i> {latestPost.date}</span>
+                </div>
+                <p>{latestPost.excerpt}</p>
+                <Link href={`/blog/${latestPost.id}`} className="cta-button">
+                  Read More <i className="fas fa-arrow-right"></i>
+                </Link>
+
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section id="web-design" className="content-section">
         <div className="container">

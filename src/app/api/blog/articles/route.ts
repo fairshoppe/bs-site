@@ -1,19 +1,11 @@
 import { NextRequest } from 'next/server';
+import { BlogPost } from '@/types/BlogPosts'
 
 // Google Cloud Storage bucket information
 const bucketName = 'buteos-res';
 const articlesFolder = 'blogs/articles';
 const bucketBaseUrl = `https://storage.googleapis.com/${bucketName}`;
 
-export interface BlogPost {
-  id: number;
-  title: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  date: string;
-  image: string;
-}
 
 // GET handler to fetch all articles or a specific article
 export async function GET(req: NextRequest) {

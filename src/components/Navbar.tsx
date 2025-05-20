@@ -40,7 +40,7 @@ export default function Navbar(): React.ReactElement {
           <i className="fas fa-bars"></i>
         </div>
         <div className="navbar-title">
-          <span>Buteos Systems</span>
+          <span><Link href="/">Buteos Systems</Link></span>
         </div>
         <div className={`navbar-menu ${isMenuOpen ? 'open' : ''}`}>
           <ul>

@@ -2,26 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import './blog.css';
+import { BlogPost, Comment } from '@/types/BlogPosts';
 
-interface BlogPost {
-  id: number;
-  title: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  date: string;
-  image: string;
-}
+// Add this near the top of your BlogPage component
 
-interface Comment {
-  id: number;
-  postId: number;
-  name: string;
-  email: string;
-  content: string;
-  date: string;
-}
-
+  
 export default function BlogPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -31,11 +16,25 @@ export default function BlogPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    // Check for postId in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('postId');
+    
+    if (postId) {
+      // Find the post with this ID
+      const post = blogPosts.find(p => p.id === parseInt(postId));
+      if (post) {
+        handlePostSelect(post);
+      }
+    }
+  }, [blogPosts]);
+
   // Fetch blog posts on initial load
   useEffect(() => {
     async function fetchBlogPosts() {
       try {
-        const response = await fetch('/api/blog/articles');
+        const response = await fetch('/api/blog/articles', { cache: 'no-store'});
         if (!response.ok) {
           throw new Error('Failed to fetch blog posts');
         }
@@ -62,7 +61,7 @@ export default function BlogPage() {
         // Try to fetch the article directly from the public directory first
         let articleData;
         try {
-          const publicResponse = await fetch(`/blog/article-${selectedPost.id}.json`);
+          const publicResponse = await fetch(`/blog/article-${selectedPost?.id}.json`);
           if (publicResponse.ok) {
             articleData = await publicResponse.json();
           }
@@ -72,7 +71,7 @@ export default function BlogPage() {
         
         // If not found in public directory, try the API
         if (!articleData) {
-          const articleResponse = await fetch(`/api/blog/articles?id=${selectedPost.id}`);
+          const articleResponse = await fetch(`/api/blog/articles?id=${selectedPost?.id}`);
           if (articleResponse.ok) {
             articleData = await articleResponse.json();
           }
@@ -84,7 +83,7 @@ export default function BlogPage() {
         }
 
         // Fetch comments for this article
-        const commentsResponse = await fetch(`/api/blog/comments?postId=${selectedPost.id}`);
+        const commentsResponse = await fetch(`/api/blog/comments?postId=${selectedPost?.id}`);
         if (commentsResponse.ok) {
           const commentsData = await commentsResponse.json();
           setComments(commentsData);
@@ -100,10 +99,33 @@ export default function BlogPage() {
     fetchArticleAndComments();
   }, [selectedPost?.id]);
 
-  const handlePostSelect = (post: BlogPost) => {
-    setSelectedPost(post);
-    window.scrollTo(0, 0);
+  // Modify the handlePostSelect function
+const handlePostSelect = (post: BlogPost) => {
+    // Reset states before setting the new post
+    setComments([]);
+    setLoading(true);
+    setSelectedPost(null); // Reset first to trigger a clean load
+    
+    // Use setTimeout to ensure the reset happens before setting the new post
+    setTimeout(() => {
+      setSelectedPost(post);
+      window.scrollTo(0, 0);
+    }, 0);
   };
+  
+  // And in the useEffect, add a console.log to debug
+  useEffect(() => {
+    if (!selectedPost) return;
+    
+    console.log("Loading article with ID:", selectedPost.id);
+    
+    async function fetchArticleAndComments() {
+      // Rest of your code...
+    }
+    
+    fetchArticleAndComments();
+  }, [selectedPost]); // Remove the ?.id to ensure it runs when the whole object changes
+  
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +168,7 @@ export default function BlogPage() {
     if (typeof window === 'undefined' || !selectedPost) return;
     
     const title = selectedPost.title;
-    const url = window.location.href;
+    const url = `${window.location.origin}/blog/${selectedPost.id}`;
     
     switch (platform) {
       case 'twitter':
@@ -207,11 +229,12 @@ export default function BlogPage() {
             </div>
           ) : (
             <div className="blog-post">
-              <img 
-                src={`${selectedPost.image}?w=1200&h=600&fit=crop`} 
+            <img 
+                src={selectedPost.image.includes('?') ? selectedPost.image : `${selectedPost.image}?w=1200&h=600&fit=crop`}
                 alt={selectedPost.title} 
                 className="blog-post-image"
-              />
+            />
+
               
               <div className="blog-post-content">
                 <h2 className="blog-post-title">{selectedPost.title}</h2>
