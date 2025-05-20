@@ -160,7 +160,7 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: var(--font-inter);
-  color: var(--text);
+  color: var(--primary);
 }
 
 a {
@@ -373,6 +373,7 @@ a {
   border-radius: 0.5rem;
   font-weight: 600;
   transition: background-color 0.3s ease;
+  margin-top: 1rem;
 }
 
 .cta-button:hover {
@@ -833,7 +834,7 @@ footer {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: var(--text);
+  color: var(--primary);
   font-weight: 500;
 }
 
@@ -1204,3 +1205,4 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
+

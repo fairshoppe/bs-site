@@ -51,7 +51,7 @@ function CheckoutForm() {
   return (
     <form onSubmit={handleSubmit}>
       <div className="form-group">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="name" color="var(--primary)">Name</label>
         <input
           type="text"
           id="name"
@@ -161,6 +161,24 @@ export default function PaymentContent() {
 
   return (
     <main>
+      
+        {stripePublishableKey.startsWith('pk_test_') && (
+          <div style={{
+            background: '#ffe58f', 
+            color: '#875a00', 
+            padding: '10px', 
+            textAlign: 'center',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 9999
+          }}>
+            TEST MODE - Use card number 4242 4242 4242 4242, any future date, any CVC
+          </div>
+        )}
+
+      
       <section className="hero-section">
         <div className="container">
           <h1>Complete Your Purchase</h1>
@@ -182,11 +200,26 @@ export default function PaymentContent() {
               <i className="fas fa-info-circle"></i>
               Upgrades and add-ons require speaking to a representative. You can add upgrades to your service at any time after your initial purchase.
             </div>
-            {clientSecret && stripePromise &&(
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
+            {clientSecret && stripePromise && (
+              <Elements 
+                stripe={stripePromise} 
+                options={{ 
+                  clientSecret,
+                  appearance: {
+                    theme: 'night',
+                    variables: {
+                      colorPrimary: '#13699a',
+                      colorBackground: '#222222',
+                      colorText: '#ffffff',
+                    },
+                  },
+                }}
+              >
                 <CheckoutForm />
               </Elements>
             )}
+
+
             <p className="secure-payment">
               <i className="fas fa-shield-alt"></i>
               Your payment is secure and encrypted
