@@ -34,36 +34,47 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Add the latest blog post section */}
-      {latestPost && (
-        <section className="content-section">
-          <div className="container">
-            <h2>Latest from Our Blog</h2>
-            <div className="blog-preview-card">
-              <div className="blog-preview-image">
-                <img 
-                  src={latestPost.image} 
-                  alt={latestPost.title}
-                  style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }}
-                />
-              </div>
-              <div className="blog-preview-content">
-                <h3>{latestPost.title}</h3>
-                <div className="blog-meta">
-                  <span><i className="fas fa-user"></i> {latestPost.author}</span>
-                  <span><i className="fas fa-calendar"></i> {latestPost.date}</span>
-                </div>
-                <p>{latestPost.excerpt}</p>
-                <Link href={`/blog?postId=${latestPost.id}`} className="cta-button">
-                  Read More <i className="fas fa-arrow-right"></i>
-                </Link>
-
-
-              </div>
-            </div>
+{/* Add the latest blog post section */}
+{latestPost && (
+  <section className="content-section">
+    <div className="container">
+      <h2>Latest from Our Blog</h2>
+      <div className="blog-preview-card">
+        <div className="blog-preview-image">
+          <img 
+            src={
+              // Handle both old and new image formats
+              latestPost.main_image?.file_url || 
+              latestPost.image || 
+              '/default-blog-image.jpg'
+            } 
+            alt={
+              latestPost.main_image?.alt_text || 
+              latestPost.title
+            }
+            style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }}
+          />
+        </div>
+        <div className="blog-preview-content">
+          <h3>{latestPost.title}</h3>
+          <div className="blog-meta">
+            <span><i className="fas fa-user"></i> {latestPost.author}</span>
+            <span><i className="fas fa-calendar"></i> {latestPost.date}</span>
           </div>
-        </section>
-      )}
+          <p>{latestPost.excerpt}</p>
+          <Link 
+            href={latestPost.slug ? `/blog/${latestPost.slug}` : `/blog?postId=${latestPost.id}`} 
+            className="cta-button"
+          >
+            Read More <i className="fas fa-arrow-right"></i>
+          </Link>
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+
 
       <section id="web-design" className="content-section">
         <div className="container">
