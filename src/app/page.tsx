@@ -5,25 +5,11 @@ import { BlogPost } from "@/types/BlogPosts"
 // Add this async function to fetch the latest blog post
 async function getLatestBlogPost(): Promise<BlogPost | null> {
   try {
-    // Use absolute URL in production, relative URL in development
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
-    const apiUrl = `${baseUrl}/api/blog/articles`;
-    
-    console.log('Fetching blog posts from:', apiUrl);
-    
-    const response = await fetch(apiUrl, { 
-      cache: 'no-store',
-      next: { revalidate: 0 }
-    });
-    
-    if (!response.ok) {
-      console.error('Failed to fetch blog posts:', response.status, response.statusText);
-      return null;
-    }
+    // Try to fetch from API
+    const response = await fetch('/api/blog/articles', { cache: 'no-store' });
+    if (!response.ok) return null;
     
     const posts = await response.json();
-    console.log('Fetched posts:', posts?.length || 0);
-    
     if (!posts || !posts.length) return null;
     
     // Sort by ID in descending order and get the first one
@@ -34,24 +20,10 @@ async function getLatestBlogPost(): Promise<BlogPost | null> {
   }
 }
 
-
 export default async function Home() {
   // Fetch the latest blog post
-  let latestPost;
-  try {
-    latestPost = await getLatestBlogPost();
-  } catch (error) {
-    console.error('Error in getLatestBlogPost:', error);
-    // Provide a fallback post if fetching fails
-    latestPost = {
-      id: 1,
-      title: "The AI Awakening in Business: More Than Just Hype",
-      excerpt: "Leveraging AI to create more efficient processes, deliver superior customer experiences, and unlock unprecedented levels of innovation.",
-      author: "John Doe",
-      date: "May 17, 2025",
-      image: "https://images.unsplash.com/photo-1677442135136-760c813770c8"
-    };
-  }
+  const latestPost = await getLatestBlogPost();
+
   return (
     <main>
       <section className="hero-section">
@@ -63,45 +35,45 @@ export default async function Home() {
         </div>
       </section>
 
-{/* Add the latest blog post section */}
-{latestPost && (
-  <section className="content-section">
-    <div className="container">
-      <h2>Latest from Our Blog</h2>
-      <div className="blog-preview-card">
-        <div className="blog-preview-image">
-          <img 
-            src={
-              // Handle both old and new image formats
-              latestPost.main_image?.file_url || 
-              latestPost.image || 
-              '/default-blog-image.jpg'
-            } 
-            alt={
-              latestPost.main_image?.alt_text || 
-              latestPost.title
-            }
-            style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }}
-          />
-        </div>
-        <div className="blog-preview-content">
-          <h3>{latestPost.title}</h3>
-          <div className="blog-meta">
-            <span><i className="fas fa-user"></i> {latestPost.author}</span>
-            <span><i className="fas fa-calendar"></i> {latestPost.date}</span>
+      {/* Add the latest blog post section */}
+      {latestPost && (
+        <section className="content-section">
+          <div className="container">
+            <h2>Latest from Our Blog</h2>
+            <div className="blog-preview-card">
+              <div className="blog-preview-image">
+                <img 
+                  src={
+                    // Handle both old and new image formats
+                    latestPost.main_image?.file_url || 
+                    latestPost.image || 
+                    '/default-blog-image.jpg'
+                  } 
+                  alt={
+                    latestPost.main_image?.alt_text || 
+                    latestPost.title
+                  }
+                  style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }}
+                />
+              </div>
+              <div className="blog-preview-content">
+                <h3>{latestPost.title}</h3>
+                <div className="blog-meta">
+                  <span><i className="fas fa-user"></i> {latestPost.author}</span>
+                  <span><i className="fas fa-calendar"></i> {latestPost.date}</span>
+                </div>
+                <p>{latestPost.excerpt}</p>
+                <Link 
+                  href={latestPost.slug ? `/blog/${latestPost.slug}` : `/blog?postId=${latestPost.id}`} 
+                  className="cta-button"
+                >
+                  Read More <i className="fas fa-arrow-right"></i>
+                </Link>
+              </div>
+            </div>
           </div>
-          <p>{latestPost.excerpt}</p>
-          <Link 
-            href={latestPost.slug ? `/blog/${latestPost.slug}` : `/blog?postId=${latestPost.id}`} 
-            className="cta-button"
-          >
-            Read More <i className="fas fa-arrow-right"></i>
-          </Link>
-        </div>
-      </div>
-    </div>
-  </section>
-)}
+        </section>
+      )}
 
 
 
