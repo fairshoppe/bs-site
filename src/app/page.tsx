@@ -3,10 +3,14 @@ import Link from "next/link";
 import { BlogPost } from "@/types/BlogPosts"
 
 // Add this async function to fetch the latest blog post
+// Add this async function to fetch the latest blog post
 async function getLatestBlogPost(): Promise<BlogPost | null> {
   try {
-    // Try to fetch from API
-    const response = await fetch('/api/blog/articles', { cache: 'no-store' });
+    // Use absolute URL for server components
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://buteossystems.com';
+    const apiUrl = new URL('/api/blog/articles', baseUrl).toString();
+    
+    const response = await fetch(apiUrl, { cache: 'no-store' });
     if (!response.ok) return null;
     
     const posts = await response.json();
@@ -19,6 +23,7 @@ async function getLatestBlogPost(): Promise<BlogPost | null> {
     return null;
   }
 }
+
 
 export default async function Home() {
   // Fetch the latest blog post
